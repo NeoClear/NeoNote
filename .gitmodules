@@ -1,0 +1,3 @@
+[submodule "third_party/NeoPyStdlib"]
+	path = third_party/NeoPyStdlib
+	url = git@github.com:NeoClear/NeoPyStdlib.git
