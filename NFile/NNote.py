@@ -1,57 +1,5 @@
 from third_party.NeoPyStdlib.NData import NJson
-import datetime
-
-
-class NDate(object):
-    """
-    The mini class for NNote
-    """
-    def __init__(self):
-        """
-        init different variables, especially date string
-        """
-        self.__date_str = datetime.datetime.now().date().isoformat()
-        self.__year_int = datetime.datetime.now().year
-        self.__month_int = datetime.datetime.now().month
-        self.__day_int = datetime.datetime.now().day
-
-    def refresh(self):
-        """
-        Refresh variables
-        :return:
-        """
-        self.__date_str = datetime.datetime.now().date().isoformat()
-        self.__year_int = datetime.datetime.now().year
-        self.__month_int = datetime.datetime.now().month
-        self.__day_int = datetime.datetime.now().day
-
-    @property
-    def date_str(self):
-        """
-        :return: String of date
-        """
-        return self.__date_str
-
-    @property
-    def year_int(self):
-        """
-        :return: Integer of year
-        """
-        return self.__year_int
-
-    @property
-    def month_int(self):
-        """
-        :return: Integer of month
-        """
-        return self.__month_int
-
-    @property
-    def day_int(self):
-        """
-        :return: Integer of day
-        """
-        return self.__day_int
+from NDate import NDate
 
 
 class NNote(object):
@@ -67,7 +15,7 @@ class NNote(object):
         self.__markdown_filename = None
         self.__markdown_metadata = None
         self.__json_file = NJson.NJsonPrimitive("month_12.js")
-        self.__date = NDate()
+        self.__date = NDate.NDate()
 
     @property
     def markdown_filename(self):
@@ -113,25 +61,53 @@ class NNote(object):
         Add today's note if you hadn't written it
         """
         self.__json_file.read_from_file()
-        flag = True
         for i in range(len(self.__json_file.metadata)):
             if self.__json_file.metadata[i]["Date"] == self.__date.date_str:
                 print("Exist")
                 self.__json_file.metadata[i]["Content"] = self.__markdown_metadata
-                flag = False
-                break
-        if flag:
-            print("Haven't been created")
-            note_today = dict()
-            note_today.update({
-                "Date": self.__date.date_str,
-                "Year": self.__date.year_int,
-                "Month": self.__date.month_int,
-                "Day": self.__date.day_int
-            })
-            note_today["Content"] = self.__markdown_metadata
-            self.__json_file.metadata.append(note_today)
+                self.__json_file.write_to_file()
+                return
+        print("Haven't been created")
+        note_today = dict()
+        note_today.update({
+            "Date": self.__date.date_str,
+            "Year": self.__date.year_int,
+            "Month": self.__date.month_int,
+            "Day": self.__date.day_int
+        })
+        note_today["Content"] = self.__markdown_metadata
+        self.__json_file.metadata.append(note_today)
         self.__json_file.write_to_file()
+        return
+
+    def print_content(self, date=None, year=None, month=None, day=None):
+        self.__json_file.read_from_file()
+        if date is not None and isinstance(date, str):
+            for cloth in self.__json_file.metadata:
+                if cloth["Date"] == date:
+                    print(cloth["Content"])
+        if date is None and isinstance(year, int) and isinstance(month, int) and isinstance(day, int):
+            for cloth in self.__json_file.metadata:
+                if cloth["Year"] == year and cloth["Month"] == month and cloth["Day"] == day:
+                    print(cloth["Content"])
+
+    def write_to_markdown(self, filename=None, date=None, year=None, month=None, day=None):
+        self.__json_file.read_from_file()
+        content = None
+        if date is not None and isinstance(date, str):
+            for cloth in self.__json_file.metadata:
+                if cloth["Date"] == date:
+                    content = cloth["Content"]
+        if date is None and isinstance(year, int) and isinstance(month, int) and isinstance(day, int):
+            for cloth in self.__json_file.metadata:
+                if cloth["Year"] == year and cloth["Month"] == month and cloth["Day"] == day:
+                    content = cloth["Content"]
+        if filename is not None:
+            with open(filename, "w") as fm:
+                fm.write(content)
+        else:
+            with open(date, "W") as fm:
+                fm.write(content)
 
     @property
     def json_filename(self):
@@ -150,14 +126,3 @@ class NNote(object):
         """
         self.__json_file.filename_read = filename
         self.__json_file.filename_write = filename
-
-
-def main():
-    note_main = NNote()
-    note_main.json_filename = "month_12.js"
-    note_main.read_from_markdown("test.md")
-    note_main.add_to_json()
-
-
-if __name__ == "__main__":
-    main()
